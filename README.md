@@ -1,11 +1,15 @@
 # Night Bright Test Bench
 
-This project is a small DOM-based playground for testing screen-darkening ideas against two simple stressors:
+This project is a testbench for night-time browser filters
+
+CSS filters, overlay layers, and targeted DOM restyling are applied via a small control UI:
+
+![screenshot of control UI](example.png)
+
+The main folder is a DOM-based playground for testing screen-darkening ideas against two simple stressors:
 
 - four bright placeholder images
 - one white reading block with black text
-
-The current version does **not** use a rasterized canvas. Instead, it applies CSS filters, overlay layers, and targeted DOM restyling to the live page.
 
 ## What The Page Contains
 
