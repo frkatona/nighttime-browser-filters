@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Night Bright Test Bench</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <aside class="control-overlay">
+    <div class="overlay-head">
+      <p class="eyebrow">Night Bright</p>
+      <h1>Filter Lab</h1>
+      <p class="overlay-copy">Compact overlay controls for live DOM-based darkening tests.</p>
+    </div>
+
+    <section class="control-section">
+      <div class="section-head">
+        <h2>Primary Effect</h2>
+        <p id="primary-summary" class="method-summary">No primary filter selected.</p>
+      </div>
+
+      <label class="field-label" for="primary-method">Choose method</label>
+      <select id="primary-method" class="method-select"></select>
+      <div id="primary-panel" class="param-panel"></div>
+    </section>
+
+    <section class="control-section">
+      <div class="section-head">
+        <h2>Secondary Effect</h2>
+        <p id="secondary-summary" class="method-summary">Optional second layer for stacking.</p>
+      </div>
+
+      <label class="field-label" for="secondary-method">Choose method</label>
+      <select id="secondary-method" class="method-select"></select>
+      <div id="secondary-panel" class="param-panel"></div>
+    </section>
+
+    <section class="control-section">
+      <div class="slider-block">
+        <div class="slider-head">
+          <label class="field-label" for="transition-ms">Filter toggle transition</label>
+          <output id="transition-ms-value" class="value-pill" for="transition-ms">450 ms</output>
+        </div>
+        <input id="transition-ms" type="range" min="0" max="2000" step="25" value="450">
+      </div>
+
+      <p id="render-status" class="render-status">Live DOM preview ready.</p>
+    </section>
+  </aside>
+
+  <div id="secondary-wrapper" class="effect-wrapper">
+    <div id="secondary-overlay" class="effect-layer"></div>
+
+    <div id="primary-wrapper" class="effect-wrapper">
+      <div id="primary-overlay" class="effect-layer"></div>
+
+      <main id="content-root" class="content-root">
+        <section class="intro-strip">
+          <p class="eyebrow">Live DOM Test Page</p>
+          <h2>Placeholder images and a bright reading block for nighttime darkening experiments</h2>
+          <p>
+            The controls now sit in a small transparent overlay, and the filters act on the page itself rather than a processed preview canvas.
+          </p>
+        </section>
+
+        <section class="gallery-grid">
+          <figure class="gallery-card">
+            <img data-placeholder="0" alt="Placeholder image showing a bright skyline">
+            <figcaption>
+              <strong>Skyline Glow</strong>
+              <span>Bright windows, cool highlights, and hard edges.</span>
+            </figcaption>
+          </figure>
+
+          <figure class="gallery-card">
+            <img data-placeholder="1" alt="Placeholder image showing a desk lamp scene">
+            <figcaption>
+              <strong>Desk Lamp</strong>
+              <span>Warm pools of light over pale surfaces.</span>
+            </figcaption>
+          </figure>
+
+          <figure class="gallery-card">
+            <img data-placeholder="2" alt="Placeholder image showing a forest trail at dusk">
+            <figcaption>
+              <strong>Forest Trail</strong>
+              <span>Low contrast midtones with cooler blue regions.</span>
+            </figcaption>
+          </figure>
+
+          <figure class="gallery-card">
+            <img data-placeholder="3" alt="Placeholder image showing a coastal horizon at night">
+            <figcaption>
+              <strong>Night Coast</strong>
+              <span>Soft gradients, bright moonlight, and specular water.</span>
+            </figcaption>
+          </figure>
+        </section>
+
+        <article class="reading-block">
+          <p class="reading-kicker">Reading Sample</p>
+          <h2>Black text on a white block for contrast and glare checks</h2>
+          <p>
+            This article card is intentionally bright. It gives you a clean white reading surface with solid black text so you can judge whether a method simply makes the page darker or actually makes it more comfortable to read at night.
+          </p>
+          <p>
+            Look at the body text, the headline, the small metadata line, and the amount of glare you feel around the edge of the white block. Simple dimming may reduce intensity while still feeling sharp. More tone-aware methods should reduce the hard edge between the white surface and the darker surroundings.
+          </p>
+          <p>
+            The gallery above gives you a second type of stressor: bright highlights, colored regions, and image detail. The combination of those images with this white text block should make it easier to compare which methods calm the page down without destroying readability.
+          </p>
+          <p class="reading-meta">Updated 11:38 PM - Placeholder editorial sample - White page stress test</p>
+        </article>
+      </main>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
