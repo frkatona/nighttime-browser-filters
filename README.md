@@ -65,6 +65,7 @@ function buildSlotResult(methodKey, values) {
   };
 }
 ```
+---
 
 ## Effect Reference
 
@@ -110,6 +111,8 @@ case "warmth": {
 }
 ```
 
+---
+
 ### 2. Scalar Dimming
 
 Purpose:
@@ -128,6 +131,8 @@ Current implementation:
 Most useful when:
 - you want a baseline to compare smarter methods against
 - you need a fast, predictable global dim
+
+---
 
 ### 3. Gamma Remapping
 
@@ -148,6 +153,8 @@ Most useful when:
 - scalar dimming feels too flat
 - mids still feel too bright after plain brightness reduction
 
+---
+
 ### 4. Luminance Remap
 
 Purpose:
@@ -166,6 +173,8 @@ Current implementation:
 Most useful when:
 - colors still need to read as colors
 - you want something more tone-aware than a simple multiplier
+
+---
 
 ### 5. Sigmoid Contrast Shaping
 
@@ -186,6 +195,8 @@ Most useful when:
 - you want more structure than gamma alone
 - you need to hold separation in some parts of the page while calming others
 
+---
+
 ### 6. Soft-Knee Compression
 
 Purpose:
@@ -204,6 +215,8 @@ Current implementation:
 Most useful when:
 - the page has a few hotspots that dominate attention
 - you want highlights rolled off rather than simply darkened everywhere
+
+---
 
 ### 7. Contrast-Aware Reading Mode
 
@@ -251,6 +264,8 @@ case "readingMode": {
 }
 ```
 
+---
+
 ### 8. Local Highlight Suppression
 
 Purpose:
@@ -270,6 +285,8 @@ Current implementation:
 Most useful when:
 - the brightest regions, not the whole page, are causing strain
 - image hotspots are more annoying than body text
+
+---
 
 ### 9. Rod Friendly
 
@@ -292,7 +309,9 @@ Most useful when:
 - color intensity is the problem
 - you want a more subdued, adaptation-friendly page instead of a sharp dark theme
 
-## The Most Insightful Code Blocks
+---
+
+## ex blocks
 
 ### 1. Placeholder Images Are Self-Contained
 
@@ -395,3 +414,21 @@ function applyAllEffects() {
 - `index.html`: page structure and content surface
 - `styles.css`: overlay UI, effect layers, reading block, and gallery styling
 - `script.js`: control generation, placeholder image generation, effect modeling, and live updates
+
+## Chrome Extension Packaging
+
+A ready-to-load extension now lives in `chrome-extension/`.
+
+- `chrome-extension/manifest.json`: Manifest V3 definition for applying effects to existing tabs
+- `chrome-extension/popup.html`, `chrome-extension/popup.css`, `chrome-extension/popup.js`: extension popup controls
+- `chrome-extension/effect-model.js`: shared extension-side effect definitions and parameter defaults
+- `chrome-extension/content.css`, `chrome-extension/content.js`: page injection logic
+- `chrome-extension/README.md`: unpacked-loading instructions
+
+The root `index.html` testbench remains independent so parameters can still be tuned outside the extension.
+
+*** Delete File: chrome-extension/background.js
+*** Delete File: chrome-extension/build.ps1
+*** Delete File: chrome-extension/index.html
+*** Delete File: chrome-extension/styles.css
+*** Delete File: chrome-extension/script.js

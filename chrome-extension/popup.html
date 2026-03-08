@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Night Bright</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <main class="popup-shell">
+    <header class="popup-head">
+      <p class="eyebrow">Night Bright</p>
+      <h1>Tab Effects</h1>
+      <p class="lede">Applies the selected effects to scriptable browser tabs. The root testbench remains separate.</p>
+    </header>
+
+    <section class="panel">
+      <div class="section-head">
+        <h2>Primary Effect</h2>
+        <p id="primary-summary" class="summary">No primary filter selected.</p>
+      </div>
+      <label class="field-label" for="primary-method">Choose method</label>
+      <select id="primary-method" class="method-select"></select>
+      <div id="primary-panel" class="param-panel"></div>
+    </section>
+
+    <section class="panel">
+      <div class="section-head">
+        <h2>Secondary Effect</h2>
+        <p id="secondary-summary" class="summary">Optional second layer for stacking.</p>
+      </div>
+      <label class="field-label" for="secondary-method">Choose method</label>
+      <select id="secondary-method" class="method-select"></select>
+      <div id="secondary-panel" class="param-panel"></div>
+    </section>
+
+    <section class="panel">
+      <div class="slider-block">
+        <div class="slider-head">
+          <label class="field-label" for="transition-ms">Filter toggle transition</label>
+          <output id="transition-ms-value" class="value-pill" for="transition-ms">450 ms</output>
+        </div>
+        <input id="transition-ms" type="range" min="0" max="2000" step="25" value="450">
+      </div>
+      <p id="status" class="status">Settings are stored globally and applied to scriptable tabs.</p>
+    </section>
+  </main>
+
+  <script src="effect-model.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>
