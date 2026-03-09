@@ -13,6 +13,10 @@ const dom = {
   status: document.getElementById("status")
 };
 
+const SVG_NS = "http://www.w3.org/2000/svg";
+const GRAPH_VIEWBOX = { width: 220, height: 140 };
+const GRAPH_FRAME = { left: 18, right: 12, top: 12, bottom: 22 };
+
 let state = model.createDefaultSettings();
 
 async function loadSettings() {
@@ -47,6 +51,227 @@ function createEmptyPanel(message) {
 function updateTransitionLabel() {
   dom.transitionValue.textContent = `${state.transitionMs} ms`;
   dom.transitionSlider.value = String(state.transitionMs);
+}
+
+function createSvgNode(name, attributes = {}) {
+  const node = document.createElementNS(SVG_NS, name);
+
+  for (const [key, value] of Object.entries(attributes)) {
+    node.setAttribute(key, String(value));
+  }
+
+  return node;
+}
+
+function projectGraphPoint(x, y) {
+  const width = GRAPH_VIEWBOX.width - GRAPH_FRAME.left - GRAPH_FRAME.right;
+  const height = GRAPH_VIEWBOX.height - GRAPH_FRAME.top - GRAPH_FRAME.bottom;
+
+  return {
+    x: GRAPH_FRAME.left + x * width,
+    y: GRAPH_FRAME.top + (1 - y) * height
+  };
+}
+
+function buildPolylinePoints(points) {
+  return points
+    .map((point) => {
+      const projected = projectGraphPoint(point.x, point.y);
+      return `${projected.x.toFixed(2)},${projected.y.toFixed(2)}`;
+    })
+    .join(" ");
+}
+
+function interpolateCurveY(points, x) {
+  if (x <= points[0].x) {
+    return points[0].y;
+  }
+
+  for (let index = 1; index < points.length; index += 1) {
+    const previous = points[index - 1];
+    const current = points[index];
+
+    if (x <= current.x) {
+      const span = Math.max(current.x - previous.x, 0.0001);
+      const amount = (x - previous.x) / span;
+      return model.lerp(previous.y, current.y, amount);
+    }
+  }
+
+  return points[points.length - 1].y;
+}
+
+function createAxisLabel(x, y, content, className, anchor = "middle") {
+  const label = createSvgNode("text", {
+    x,
+    y,
+    class: className,
+    "text-anchor": anchor
+  });
+  label.textContent = content;
+  return label;
+}
+
+function renderGraphPreview(svg, descriptor) {
+  const nodes = [];
+  const frameWidth = GRAPH_VIEWBOX.width - GRAPH_FRAME.left - GRAPH_FRAME.right;
+  const frameHeight = GRAPH_VIEWBOX.height - GRAPH_FRAME.top - GRAPH_FRAME.bottom;
+  const frameX = GRAPH_FRAME.left;
+  const frameY = GRAPH_FRAME.top;
+  const identityStart = projectGraphPoint(0, 0);
+  const identityEnd = projectGraphPoint(1, 1);
+
+  nodes.push(createSvgNode("rect", {
+    x: frameX,
+    y: frameY,
+    width: frameWidth,
+    height: frameHeight,
+    rx: 10,
+    class: "graph-frame"
+  }));
+
+  for (const step of [0.25, 0.5, 0.75]) {
+    const vertical = projectGraphPoint(step, 0);
+    const horizontal = projectGraphPoint(0, step);
+
+    nodes.push(createSvgNode("line", {
+      x1: vertical.x,
+      y1: frameY,
+      x2: vertical.x,
+      y2: frameY + frameHeight,
+      class: "graph-grid"
+    }));
+
+    nodes.push(createSvgNode("line", {
+      x1: frameX,
+      y1: horizontal.y,
+      x2: frameX + frameWidth,
+      y2: horizontal.y,
+      class: "graph-grid"
+    }));
+  }
+
+  nodes.push(createSvgNode("line", {
+    x1: identityStart.x,
+    y1: identityStart.y,
+    x2: identityEnd.x,
+    y2: identityEnd.y,
+    class: "graph-reference"
+  }));
+
+  for (const marker of descriptor.markers || []) {
+    const markerY = typeof marker.y === "number"
+      ? marker.y
+      : interpolateCurveY(descriptor.points, marker.x);
+    const projected = projectGraphPoint(marker.x, markerY);
+
+    nodes.push(createSvgNode("line", {
+      x1: projected.x,
+      y1: frameY,
+      x2: projected.x,
+      y2: frameY + frameHeight,
+      class: "graph-marker-line"
+    }));
+
+    nodes.push(createSvgNode("circle", {
+      cx: projected.x,
+      cy: projected.y,
+      r: 3.5,
+      class: "graph-marker-dot"
+    }));
+
+    const labelAnchor = projected.x > frameX + frameWidth - 28 ? "end" : "start";
+    const labelX = labelAnchor === "end" ? projected.x - 7 : projected.x + 7;
+    const labelY = Math.max(projected.y - 8, frameY + 10);
+    nodes.push(createAxisLabel(labelX, labelY, marker.label, "graph-marker-label", labelAnchor));
+  }
+
+  nodes.push(createSvgNode("polyline", {
+    points: buildPolylinePoints(descriptor.points),
+    class: "graph-curve"
+  }));
+
+  nodes.push(createAxisLabel(frameX, frameY + frameHeight + 15, "0", "graph-axis-label", "middle"));
+  nodes.push(createAxisLabel(frameX + frameWidth, frameY + frameHeight + 15, "1", "graph-axis-label", "middle"));
+  nodes.push(createAxisLabel(frameX - 8, frameY + frameHeight + 4, "0", "graph-axis-label", "end"));
+  nodes.push(createAxisLabel(frameX - 8, frameY + 4, "1", "graph-axis-label", "end"));
+
+  svg.replaceChildren(...nodes);
+}
+
+function updateGraphCard(card, descriptor) {
+  card.querySelector(".graph-label").textContent = descriptor.label;
+  card.querySelector(".graph-caption").textContent = descriptor.caption;
+
+  const svg = card.querySelector(".graph-svg");
+  svg.setAttribute("aria-label", descriptor.label);
+  renderGraphPreview(svg, descriptor);
+}
+
+function createGraphCard(slotKey, methodKey, values) {
+  const descriptor = model.getGraphDescriptor(methodKey, values);
+  if (!descriptor) {
+    return null;
+  }
+
+  const card = document.createElement("section");
+  card.className = "graph-card";
+  card.dataset.slot = slotKey;
+  card.dataset.method = methodKey;
+
+  const head = document.createElement("div");
+  head.className = "graph-head";
+
+  const label = document.createElement("p");
+  label.className = "graph-label";
+
+  const key = document.createElement("p");
+  key.className = "graph-key";
+  key.textContent = "Input -> output";
+
+  const svg = createSvgNode("svg", {
+    class: "graph-svg",
+    viewBox: `0 0 ${GRAPH_VIEWBOX.width} ${GRAPH_VIEWBOX.height}`,
+    role: "img"
+  });
+
+  const caption = document.createElement("p");
+  caption.className = "graph-caption";
+
+  head.append(label, key);
+  card.append(head, svg, caption);
+  updateGraphCard(card, descriptor);
+  return card;
+}
+
+function refreshGraphCard(slotKey, methodKey) {
+  const panel = dom[`${slotKey}Panel`];
+  const values = state.slots[slotKey].values[methodKey];
+  const descriptor = model.getGraphDescriptor(methodKey, values);
+  const existing = panel.querySelector(".graph-card");
+
+  if (!descriptor) {
+    if (existing) {
+      existing.remove();
+    }
+    return;
+  }
+
+  if (!existing || existing.dataset.method !== methodKey) {
+    const replacement = createGraphCard(slotKey, methodKey, values);
+    if (!replacement) {
+      return;
+    }
+
+    if (existing) {
+      existing.replaceWith(replacement);
+    } else {
+      panel.append(replacement);
+    }
+    return;
+  }
+
+  updateGraphCard(existing, descriptor);
 }
 
 function createSliderControl(slotKey, methodKey, param, values) {
@@ -84,6 +309,7 @@ function createSliderControl(slotKey, methodKey, param, values) {
   input.addEventListener("input", async () => {
     state.slots[slotKey].values[methodKey][param.id] = Number(input.value);
     output.textContent = model.formatValue(Number(input.value), param.format);
+    refreshGraphCard(slotKey, methodKey);
     await persistSettings();
   });
 
@@ -127,6 +353,11 @@ function renderSlotPanel(slotKey) {
 
   for (const param of def.params) {
     fragment.append(createSliderControl(slotKey, slot.method, param, values));
+  }
+
+  const graphCard = createGraphCard(slotKey, slot.method, values);
+  if (graphCard) {
+    fragment.append(graphCard);
   }
 
   panel.replaceChildren(fragment);

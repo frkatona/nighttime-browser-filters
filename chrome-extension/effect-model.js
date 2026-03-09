@@ -307,6 +307,10 @@
     return cleanParts.length ? cleanParts.join(" ") : "none";
   }
 
+  function normalizedSigmoid(value, midpoint, steepness) {
+    return 1 / (1 + Math.exp(-steepness * (value - midpoint)));
+  }
+
   function formatValue(value, format) {
     if (format === "pixels") {
       return `${Math.round(value)} px`;
@@ -645,6 +649,120 @@
     return combined;
   }
 
+  function sampleCurve(sampleCount, fn) {
+    const points = [];
+    const steps = Math.max(2, sampleCount);
+
+    for (let index = 0; index < steps; index += 1) {
+      const x = index / (steps - 1);
+      points.push({
+        x,
+        y: clamp01(fn(x))
+      });
+    }
+
+    return points;
+  }
+
+  function getGraphDescriptor(methodKey, values) {
+    const amount = values.strength;
+
+    switch (methodKey) {
+      case "scalarDimming":
+        return {
+          label: "Brightness transfer",
+          caption: "Linear dimming with a retained shadow floor.",
+          points: sampleCurve(56, (x) => lerp(x, values.shadowFloor + x * values.dimScale, amount)),
+          markers: []
+        };
+
+      case "gammaRemap":
+        return {
+          label: "Gamma curve",
+          caption: "Higher exponent bends mids downward while lift preserves the low end.",
+          points: sampleCurve(56, (x) => {
+            const target = values.shadowLift + (1 - values.shadowLift) * Math.pow(x, values.exponent);
+            return lerp(x, target, amount);
+          }),
+          markers: []
+        };
+
+      case "luminanceRemap":
+        return {
+          label: "Luminance remap",
+          caption: "Luma is compressed with a gamma-shaped curve and floor.",
+          points: sampleCurve(56, (x) => {
+            const target = values.lumaFloor + (1 - values.lumaFloor) * Math.pow(x, values.lumaGamma);
+            return lerp(x, target, amount);
+          }),
+          markers: []
+        };
+
+      case "sigmoidContrast":
+        return {
+          label: "Sigmoid shaping",
+          caption: "Midpoint moves the bend; steepness sharpens the shoulder and toe.",
+          points: sampleCurve(56, (x) => {
+            const lo = normalizedSigmoid(0, values.midpoint, values.steepness);
+            const hi = normalizedSigmoid(1, values.midpoint, values.steepness);
+            const sig = (normalizedSigmoid(x, values.midpoint, values.steepness) - lo) / Math.max(hi - lo, 0.0001);
+            const target = sig * 0.82;
+            return lerp(x, target, amount);
+          }),
+          markers: [
+            {
+              x: values.midpoint,
+              label: "mid"
+            }
+          ]
+        };
+
+      case "softKnee":
+        return {
+          label: "Soft-knee shoulder",
+          caption: "Threshold sets the knee start; softness rounds the highlight rolloff.",
+          points: sampleCurve(56, (x) => {
+            if (x <= values.threshold) {
+              return lerp(x, x, amount);
+            }
+
+            const shoulder = (x - values.threshold) / Math.max(1 - values.threshold, 0.0001);
+            const softness = Math.max(values.knee, 0.02);
+            const normalized = (1 - Math.exp(-shoulder / softness)) / (1 - Math.exp(-1 / softness));
+            const target = values.threshold + normalized * (1 - values.threshold) * 0.78;
+            return lerp(x, target, amount);
+          }),
+          markers: [
+            {
+              x: values.threshold,
+              label: "knee"
+            }
+          ]
+        };
+
+      case "rodFriendly":
+        return {
+          label: "Luminance band",
+          caption: "Brightness is compressed into a narrower, calmer range.",
+          points: sampleCurve(56, (x) => {
+            const floor = 0.06;
+            const target = floor + x * (values.ceiling - floor);
+            return lerp(x, target, amount);
+          }),
+          markers: [
+            {
+              x: 1,
+              y: values.ceiling,
+              label: "ceiling"
+            }
+          ]
+        };
+
+      default:
+        return null;
+    }
+  }
+
   globalThis.NightBrightModel = {
     SLOT_KEYS,
     METHOD_DEFS,
@@ -660,6 +778,7 @@
     mergeSettings,
     defaultContentAdjust,
     buildSlotResult,
-    combineContentAdjustments
+    combineContentAdjustments,
+    getGraphDescriptor
   };
 })();

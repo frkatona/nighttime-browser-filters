@@ -159,6 +159,100 @@ body {
   line-height: 1.45;
 }
 
+.graph-card {
+  display: grid;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.graph-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.graph-label,
+.graph-key,
+.graph-caption {
+  margin: 0;
+}
+
+.graph-label {
+  color: #fff3dd;
+  font-size: 0.84rem;
+  font-weight: 700;
+}
+
+.graph-key {
+  color: rgba(238, 241, 235, 0.58);
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.graph-caption {
+  color: var(--muted);
+  font-size: 0.78rem;
+  line-height: 1.45;
+}
+
+.graph-svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 10px;
+  background: rgba(7, 10, 13, 0.32);
+}
+
+.graph-frame {
+  fill: rgba(255, 255, 255, 0.025);
+  stroke: rgba(255, 255, 255, 0.1);
+}
+
+.graph-grid {
+  stroke: rgba(255, 255, 255, 0.07);
+  stroke-width: 1;
+}
+
+.graph-reference {
+  stroke: rgba(238, 241, 235, 0.2);
+  stroke-width: 1.5;
+  stroke-dasharray: 5 4;
+}
+
+.graph-curve {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.graph-marker-line {
+  stroke: rgba(255, 243, 221, 0.26);
+  stroke-width: 1.5;
+  stroke-dasharray: 3 4;
+}
+
+.graph-marker-dot {
+  fill: #fff3dd;
+}
+
+.graph-axis-label,
+.graph-marker-label {
+  fill: rgba(238, 241, 235, 0.72);
+  font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+  font-size: 10px;
+}
+
+.graph-marker-label {
+  fill: #fff0d5;
+  font-weight: 700;
+}
+
 .status {
   margin-top: 10px;
   padding: 10px 12px;
