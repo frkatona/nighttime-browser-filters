@@ -14,6 +14,34 @@
       <p class="lede">Applies the selected effects to scriptable browser tabs. The root testbench remains separate.</p>
     </header>
 
+    <section class="panel power-panel" aria-label="Extension power">
+      <div>
+        <h2>Plugin</h2>
+        <p id="enabled-summary" class="summary">Effects enabled on scriptable tabs.</p>
+      </div>
+      <label class="switch" for="enabled-toggle">
+        <input id="enabled-toggle" type="checkbox">
+        <span class="switch-track" aria-hidden="true">
+          <span class="switch-thumb"></span>
+        </span>
+        <span id="enabled-toggle-text" class="switch-text">On</span>
+      </label>
+    </section>
+
+    <section class="panel power-panel" aria-label="Verbose mode">
+      <div>
+        <h2>Verbose Mode</h2>
+        <p id="verbose-summary" class="summary">Shows explanatory copy and current plugin status.</p>
+      </div>
+      <label class="switch" for="verbose-toggle">
+        <input id="verbose-toggle" type="checkbox">
+        <span class="switch-track" aria-hidden="true">
+          <span class="switch-thumb"></span>
+        </span>
+        <span id="verbose-toggle-text" class="switch-text">Off</span>
+      </label>
+    </section>
+
     <section class="panel">
       <div class="section-head">
         <h2>Primary Effect</h2>

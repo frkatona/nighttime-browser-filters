@@ -2,6 +2,12 @@ const STORAGE_KEY = "nightBrightSettings";
 const model = globalThis.NightBrightModel;
 
 const dom = {
+  enabledToggle: document.getElementById("enabled-toggle"),
+  enabledToggleText: document.getElementById("enabled-toggle-text"),
+  enabledSummary: document.getElementById("enabled-summary"),
+  verboseToggle: document.getElementById("verbose-toggle"),
+  verboseToggleText: document.getElementById("verbose-toggle-text"),
+  verboseSummary: document.getElementById("verbose-summary"),
   primaryMethod: document.getElementById("primary-method"),
   secondaryMethod: document.getElementById("secondary-method"),
   primaryPanel: document.getElementById("primary-panel"),
@@ -51,6 +57,23 @@ function createEmptyPanel(message) {
 function updateTransitionLabel() {
   dom.transitionValue.textContent = `${state.transitionMs} ms`;
   dom.transitionSlider.value = String(state.transitionMs);
+}
+
+function updateEnabledControl() {
+  dom.enabledToggle.checked = state.enabled;
+  dom.enabledToggleText.textContent = state.enabled ? "On" : "Off";
+  dom.enabledSummary.textContent = state.enabled
+    ? "Effects enabled on scriptable tabs."
+    : "Plugin disabled. Stored effect settings are preserved.";
+}
+
+function updateVerboseControl() {
+  document.body.classList.toggle("verbose-on", state.verbose);
+  dom.verboseToggle.checked = state.verbose;
+  dom.verboseToggleText.textContent = state.verbose ? "On" : "Off";
+  dom.verboseSummary.textContent = state.verbose
+    ? "Explanatory copy is visible."
+    : "Only direct labels are visible.";
 }
 
 function createSvgNode(name, attributes = {}) {
@@ -371,9 +394,23 @@ async function initialize() {
   populateSelect(dom.secondaryMethod, "secondary");
   dom.primaryMethod.value = state.slots.primary.method;
   dom.secondaryMethod.value = state.slots.secondary.method;
+  updateEnabledControl();
+  updateVerboseControl();
   updateTransitionLabel();
   renderSlotPanel("primary");
   renderSlotPanel("secondary");
+
+  dom.enabledToggle.addEventListener("change", async () => {
+    state.enabled = dom.enabledToggle.checked;
+    updateEnabledControl();
+    await persistSettings();
+  });
+
+  dom.verboseToggle.addEventListener("change", async () => {
+    state.verbose = dom.verboseToggle.checked;
+    updateVerboseControl();
+    await persistSettings();
+  });
 
   dom.primaryMethod.addEventListener("change", async () => {
     state.slots.primary.method = dom.primaryMethod.value;

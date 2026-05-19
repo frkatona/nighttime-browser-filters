@@ -43,7 +43,8 @@ body {
 }
 
 .popup-head h1,
-.section-head h2 {
+.section-head h2,
+.power-panel h2 {
   margin: 0;
   font-family: Georgia, "Book Antiqua", serif;
   letter-spacing: -0.03em;
@@ -51,6 +52,17 @@ body {
 
 .popup-head h1 {
   font-size: 1.55rem;
+}
+
+body:not(.verbose-on) .popup-head h1,
+body:not(.verbose-on) .lede,
+body:not(.verbose-on) .summary,
+body:not(.verbose-on) .status,
+body:not(.verbose-on) .empty-panel,
+body:not(.verbose-on) .range-copy,
+body:not(.verbose-on) .graph-key,
+body:not(.verbose-on) .graph-caption {
+  display: none;
 }
 
 .eyebrow {
@@ -75,6 +87,78 @@ body {
   border: 1px solid var(--panel-line);
   border-radius: 16px;
   background: var(--panel-bg);
+}
+
+.power-panel {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.power-panel h2 {
+  margin-bottom: 4px;
+  font-size: 1rem;
+}
+
+.switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 116px;
+  color: #fff3dd;
+  font-size: 0.86rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.switch input {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.switch-track {
+  position: relative;
+  flex: 0 0 auto;
+  width: 44px;
+  height: 24px;
+  border: 1px solid var(--panel-line);
+  border-radius: 999px;
+  background: rgba(7, 10, 13, 0.55);
+  transition:
+    background 160ms ease,
+    border-color 160ms ease;
+}
+
+.switch-thumb {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: rgba(238, 241, 235, 0.76);
+  transition:
+    background 160ms ease,
+    transform 160ms ease;
+}
+
+.switch input:checked + .switch-track {
+  border-color: rgba(239, 178, 97, 0.72);
+  background: var(--accent-soft);
+}
+
+.switch input:checked + .switch-track .switch-thumb {
+  background: var(--accent);
+  transform: translateX(20px);
+}
+
+.switch input:focus-visible + .switch-track {
+  outline: 2px solid rgba(239, 178, 97, 0.92);
+  outline-offset: 3px;
 }
 
 .section-head {

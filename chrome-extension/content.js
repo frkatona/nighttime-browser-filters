@@ -125,6 +125,20 @@ function applyOverlay(target, overlay, transitionMs) {
   target.style.webkitBackdropFilter = overlay.backdropFilter;
 }
 
+function clearEffects(transitionMs) {
+  const emptyOverlay = model.defaultOverlay ? model.defaultOverlay() : {
+    opacity: 0,
+    background: "transparent",
+    mixBlendMode: "normal",
+    backdropFilter: "none"
+  };
+
+  applyOverlay(primaryOverlay, emptyOverlay, transitionMs);
+  applyOverlay(secondaryOverlay, emptyOverlay, transitionMs);
+  document.documentElement.removeAttribute("data-night-bright-enabled");
+  clearReadingClasses();
+}
+
 function clearReadingClasses() {
   for (const element of readingSurfaces) {
     element.classList.remove(SURFACE_CLASS);
@@ -315,6 +329,12 @@ function applySettings(settings) {
 
   ensureHost();
   activeSettings = settings;
+
+  if (!settings.enabled) {
+    activeCombined = model.defaultContentAdjust();
+    clearEffects(settings.transitionMs);
+    return;
+  }
 
   const results = model.SLOT_KEYS.map((slotKey) => {
     const slot = settings.slots[slotKey];

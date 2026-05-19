@@ -346,6 +346,8 @@
 
   function createDefaultSettings() {
     return {
+      enabled: true,
+      verbose: false,
       transitionMs: 450,
       slots: {
         primary: createSlotState("primary"),
@@ -359,6 +361,14 @@
     if (!raw || typeof raw !== "object") {
       return defaults;
     }
+
+    defaults.enabled = typeof raw.enabled === "boolean"
+      ? raw.enabled
+      : defaults.enabled;
+
+    defaults.verbose = typeof raw.verbose === "boolean"
+      ? raw.verbose
+      : defaults.verbose;
 
     defaults.transitionMs = typeof raw.transitionMs === "number"
       ? clamp(raw.transitionMs, 0, 2000)
