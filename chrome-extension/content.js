@@ -19,6 +19,55 @@ function grayColor(level) {
   return `rgb(${channel}, ${channel}, ${channel})`;
 }
 
+function extractBrightnessFactors(filter) {
+  const factors = [];
+  const matches = filter.matchAll(/brightness\(([^)]+)\)/gi);
+
+  for (const match of matches) {
+    const rawValue = match[1].trim();
+    const value = rawValue.endsWith("%")
+      ? Number(rawValue.slice(0, -1)) / 100
+      : Number(rawValue);
+
+    if (!Number.isNaN(value)) {
+      factors.push(model.clamp(value, 0, 5));
+    }
+  }
+
+  return factors;
+}
+
+function calculateCanvasGray(results, combined) {
+  let canvasGray = 1;
+
+  for (const result of results) {
+    for (const brightness of extractBrightnessFactors(result.filter)) {
+      canvasGray *= brightness;
+    }
+
+    if (result.overlay.mixBlendMode === "multiply") {
+      canvasGray *= 1 - result.overlay.opacity * 0.72;
+    }
+  }
+
+  if (combined.readingAmount > 0.01) {
+    canvasGray = Math.min(
+      canvasGray,
+      model.lerp(1, combined.darkSurface, combined.readingAmount)
+    );
+  }
+
+  if (combined.localSuppression > 0.01) {
+    canvasGray *= 1 - combined.localSuppression * 0.18;
+  }
+
+  if (combined.rodAmount > 0.01) {
+    canvasGray *= 1 - combined.rodAmount * (1 - combined.rodCeiling) * 0.24;
+  }
+
+  return model.clamp(canvasGray, 0.04, 1);
+}
+
 function ensureHost() {
   if (host && document.body.contains(host)) {
     return;
@@ -26,11 +75,14 @@ function ensureHost() {
 
   host = document.createElement("div");
   host.id = HOST_ID;
-  host.style.all = "initial";
-  host.style.position = "fixed";
-  host.style.inset = "0";
-  host.style.pointerEvents = "none";
-  host.style.zIndex = "2147483646";
+  host.style.setProperty("all", "initial", "important");
+  host.style.setProperty("position", "fixed", "important");
+  host.style.setProperty("inset", "0", "important");
+  host.style.setProperty("width", "100vw", "important");
+  host.style.setProperty("height", "100vh", "important");
+  host.style.setProperty("pointer-events", "none", "important");
+  host.style.setProperty("z-index", "2147483647", "important");
+  host.style.setProperty("contain", "strict", "important");
 
   const shadowRoot = host.attachShadow({ mode: "open" });
   const style = document.createElement("style");
@@ -42,8 +94,11 @@ function ensureHost() {
     .layer {
       position: fixed;
       inset: 0;
+      width: 100vw;
+      height: 100vh;
       pointer-events: none;
       opacity: 0;
+      z-index: 2147483647;
       transition:
         opacity var(--night-bright-transition, 450ms) cubic-bezier(0.2, 0.8, 0.2, 1),
         background var(--night-bright-transition, 450ms) cubic-bezier(0.2, 0.8, 0.2, 1),
@@ -87,11 +142,18 @@ function parseColor(value) {
     return null;
   }
 
-  const parts = match[1].split(",").map((part) => part.trim());
+  const parts = match[1]
+    .replace(/\s*\/\s*/, " ")
+    .split(/[\s,]+/)
+    .filter(Boolean);
   const r = Number(parts[0]);
   const g = Number(parts[1]);
   const b = Number(parts[2]);
-  const a = parts[3] === undefined ? 1 : Number(parts[3]);
+  const a = parts[3] === undefined
+    ? 1
+    : parts[3].endsWith("%")
+      ? Number(parts[3].slice(0, -1)) / 100
+      : Number(parts[3]);
 
   if ([r, g, b, a].some((part) => Number.isNaN(part))) {
     return null;
@@ -272,6 +334,7 @@ function applySettings(settings) {
       results.map((result) => (result.filter === "none" ? "" : result.filter))
     )
   );
+  document.documentElement.style.setProperty("--night-bright-page-bg", grayColor(calculateCanvasGray(results, combined)));
 
   applyMediaAdjustments(combined);
   applyReadingMode(combined);

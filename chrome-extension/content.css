@@ -2,9 +2,16 @@ html[data-night-bright-enabled="true"] {
   --night-bright-transition: 450ms;
   --night-bright-page-filter: none;
   --night-bright-media-filter: none;
+  --night-bright-page-bg: rgb(255, 255, 255);
   --night-bright-reading-bg: rgb(255, 255, 255);
   --night-bright-reading-text: rgb(0, 0, 0);
   --night-bright-reading-border: rgba(0, 0, 0, 0.08);
+}
+
+html[data-night-bright-enabled="true"],
+html[data-night-bright-enabled="true"] body {
+  background-color: var(--night-bright-page-bg) !important;
+  transition: background-color var(--night-bright-transition) cubic-bezier(0.2, 0.8, 0.2, 1) !important;
 }
 
 html[data-night-bright-enabled="true"] body > :not(#night-bright-host):not(script):not(style):not(link):not(meta) {
